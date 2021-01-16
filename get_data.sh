@@ -1,12 +1,12 @@
 # Download dataset
-curl "https://data-flair.s3.ap-south-1.amazonaws.com/Data-Science-Data/face-mask-dataset.zip" --output data/face-mask-dataset.zip
+fileid="10NNtkkQgrEHx4Sa7NbVWoLLgSfVHd6tm"
+filename="data/face_mask_dataset.zip"
+curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" > /dev/null
+curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=${fileid}" -o ${filename}
 
 # Unzip contents
-unzip -q data/face-mask-dataset.zip -d data
-unzip -q data/Dataset/train.zip -d data
-unzip -q data/Dataset/test.zip -d data
+unzip -q ${filename} -d data
 
 # Clean up files
-rm -rf data/Dataset
-rm data/face-mask-dataset.zip
-
+rm ${filename}
+rm cookie
