@@ -8,6 +8,7 @@ import cv2
 DATA_DIR = 'data'
 ANNOTATION_DIR = os.path.join(DATA_DIR, 'annotations')
 IMAGE_DIR = os.path.join(DATA_DIR, 'images')
+NEW_IMAGES_DIR = os.path.join(DATA_DIR, 'face_images')
 
 
 def isolate_face_from_coordinates(image, x_min, x_max, y_min, y_max):
@@ -31,7 +32,7 @@ def get_target_from_object(obj):
 
 
 def main():
-    df = pd.DataFrame(columns=['id', 'target', 'image_pixels'])
+    df = pd.DataFrame(columns=['id', 'target', 'image_url'])
     counter = 0
     for annotation_file in os.listdir(ANNOTATION_DIR):
         with open(os.path.join(ANNOTATION_DIR, annotation_file), 'r') as f:
@@ -52,15 +53,21 @@ def main():
                 coordinates = get_coordinates_from_object(obj)
                 target = get_target_from_object(obj)
 
-                face_pixels = isolate_face_from_coordinates(
+                face_image = isolate_face_from_coordinates(
                     image, *coordinates
                 )
 
-                df.loc[counter] = [counter, target, face_pixels]
+                if not os.path.exists(NEW_IMAGES_DIR):
+                    os.makedirs(NEW_IMAGES_DIR)
+
+                new_image_url = os.path.join(NEW_IMAGES_DIR, f'{counter}.png')
+                cv2.imwrite(new_image_url, face_image)
+
+                df.loc[counter] = [counter, target, new_image_url]
                 counter += 1
 
     # Save df to csv
-    df.to_csv(os.path.join(DATA_DIR, 'image_data.csv'))
+    df.to_csv(os.path.join(DATA_DIR, 'image_data.csv'), index=False)
 
 
 if __name__ == '__main__':
