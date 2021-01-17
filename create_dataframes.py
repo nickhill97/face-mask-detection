@@ -1,4 +1,5 @@
 import os
+import logging
 
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -9,6 +10,21 @@ DATA_DIR = 'data'
 ANNOTATION_DIR = os.path.join(DATA_DIR, 'annotations')
 IMAGE_DIR = os.path.join(DATA_DIR, 'images')
 NEW_IMAGES_DIR = os.path.join(DATA_DIR, 'face_images')
+NO_MASK_IMAGE_DIR = os.path.join(DATA_DIR, 'no_mask_face_images')
+
+
+logger = logging.getLogger("Preparing images")
+logger.setLevel(logging.INFO)
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 
 def isolate_face_from_coordinates(image, x_min, x_max, y_min, y_max):
@@ -64,10 +80,30 @@ def main():
                 cv2.imwrite(new_image_url, face_image)
 
                 df.loc[counter] = [counter, target, new_image_url]
+
+                if counter % 250 == 0:
+                    logger.info(f'Added {counter} images to dataframe')
+
                 counter += 1
 
     # Save df to csv
     df.to_csv(os.path.join(DATA_DIR, 'image_data.csv'), index=False)
+
+    # Add images from second data set
+    for image_file in os.listdir(NO_MASK_IMAGE_DIR):
+        df.loc[counter] = [
+            counter,
+            'without_mask',
+            os.path.join(NO_MASK_IMAGE_DIR, image_file)
+        ]
+
+        if counter % 250 == 0:
+            logger.info(f'Added {counter} images to dataframe')
+
+        counter += 1
+
+    # Save df to csv
+    df.to_csv(os.path.join(DATA_DIR, 'all_image_data.csv'), index=False)
 
 
 if __name__ == '__main__':
