@@ -105,6 +105,10 @@ def main():
     # Save df to csv
     df.to_csv(os.path.join(DATA_DIR, 'all_image_data.csv'), index=False)
 
+    # Remove mask worn incorrect type
+    df = df[df['target'] != 'mask_weared_incorrect']
+    df.to_csv(os.path.join(DATA_DIR, 'final_image_data.csv'), index=False)
+
 
 if __name__ == '__main__':
     main()
