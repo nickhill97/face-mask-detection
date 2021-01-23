@@ -1,6 +1,7 @@
 import cv2
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split
 # from keras.preprocessing.image import ImageDataGenerator
 
 
@@ -47,25 +48,41 @@ def read_and_process_image(path):
     return image
 
 
-def create_data_set():
+def create_data_sets():
     df = pd.read_csv('data/final_image_data.csv')
     X = []
     y = []
 
+    print(f'Processing {len(df)} images')
+
+    counter = 1
     for idx, row in df.iterrows():
         try:
             image = read_and_process_image(row['image_url'])
             X.append(image)
             y.append(1 if row['target'] == 'with_mask' else 0)
         except Exception:
-            print(row['image_url'])
+            print(f"Exception raised for {row['image_url']}")
+
+        if counter % 500 == 0:
+            print(f'Processed {counter} images')
+
+        counter += 1
 
     X = np.asarray(X)
     y = np.asarray(y)
 
-    np.save('data/processed_data_X.npy', X)
-    np.save('data/processed_data_y.npy', y)
+    print('Finished processing images\nCreating train and test sets')
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+
+    np.save('data/X_train.npy', X_train)
+    np.save('data/X_test.npy', X_test)
+    np.save('data/y_train.npy', y_train)
+    np.save('data/y_test.npy', y_test)
 
 
 if __name__ == '__main__':
-    create_data_set()
+    create_data_sets()
