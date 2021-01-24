@@ -2,13 +2,13 @@ import cv2
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-# from keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing.image import ImageDataGenerator
+
+from config import Config
 
 
 def resize_image(image):
-    height = 220
-    width = 220
-    dimensions = (width, height)
+    dimensions = (Config.IMAGE_WIDTH, Config.IMAGE_HEIGHT)
     resized_image = cv2.resize(
         image, dimensions, interpolation=cv2.INTER_CUBIC)
 
@@ -23,29 +23,37 @@ def normalise_image(image):
     return image/255
 
 
-# def augment_data(training_data):
-#     ImageDataGenerator(
-#         featurewise_center=False,  # set input mean to 0 over the dataset
-#         samplewise_center=False,  # set each sample mean to 0
-#         featurewise_std_normalization=False,  # divide inputs by std
-#         samplewise_std_normalization=False,  # divide each input by its std
-#         zca_whitening=False,  # apply ZCA whitening
-#         rotation_range=30,  # randomly rotate images in the range
-#         zoom_range=0.2, # Randomly zoom image
-#         width_shift_range=0.1,  # randomly shift images horizontally
-#         height_shift_range=0.1,  # randomly shift images vertically
-#         horizontal_flip=True,  # randomly flip images
-#         vertical_flip=False  # randomly flip images
-#     )
+def augment_data(training_data, **kwargs):
+    """
+    Transform the training data to artificially expand the size of the dataset.
+    """
+    default_args = {
+        'featurewise_center': False,  # set input mean to 0 over the dataset
+        'samplewise_center': False,  # set each sample mean to 0
+        'featurewise_std_normalization': False,  # divide inputs by std
+        'samplewise_std_normalization': False,  # divide each input by its std
+        'zca_whitening': False,  # apply ZCA whitening
+        'rotation_range': 30,  # randomly rotate images in the range
+        'zoom_range': 0.2,  # Randomly zoom image
+        'width_shift_range': 0.1,  # randomly shift images horizontally
+        'height_shift_range': 0.1,  # randomly shift images vertically
+        'horizontal_flip': True,  # randomly flip images
+        'vertical_flip': False  # randomly flip images
+    }
+    default_args.update(kwargs)
+
+    datagen = ImageDataGenerator(**default_args)
+    datagen.fit(training_data)
+
+    return datagen
 
 
-def read_and_process_image(path):
-    image = cv2.imread(path)
-    image = resize_image(image)
-    image = reduce_image_noise(image)
-    image = normalise_image(image)
+def process_image(image):
+    processed_image = resize_image(image)
+    processed_image = reduce_image_noise(processed_image)
+    processed_image = normalise_image(processed_image)
 
-    return image
+    return processed_image
 
 
 def create_data_sets():
@@ -58,7 +66,7 @@ def create_data_sets():
     counter = 1
     for idx, row in df.iterrows():
         try:
-            image = read_and_process_image(row['image_url'])
+            image = process_image(cv2.imread(row['image_url']))
             X.append(image)
             y.append(1 if row['target'] == 'with_mask' else 0)
         except Exception:
