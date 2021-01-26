@@ -80,6 +80,10 @@ If you are wanting to train the CNN to create the model yourself, this can be do
     ```bash
     $ python infer.py path/to/model path/to/image
     ```
+
+Example:
+
+<img src='images/face_mask_prediction.png'>
     
 The model is two part:
 
