@@ -83,7 +83,7 @@ If you are wanting to train the CNN to create the model yourself, this can be do
 
 Example:
 
-<img src='images/face_mask_prediction.png'>
+<img src='images/face_mask_prediction.png' height=400>
     
 The model is two part:
 
