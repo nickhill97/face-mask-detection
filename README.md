@@ -2,8 +2,6 @@
 
 CNN Project for face mask detection in images.
 
-**Status**: Ongoing
-
 ## Setup
 
 ### 1. System Requirements
